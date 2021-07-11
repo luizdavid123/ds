@@ -31,8 +31,8 @@ func (q *Queue) Size() int {
 	return size
 }
 
-// Push append an item at the end of the queue
-func (q *Queue) Push(v interface{}) {
+// Enqueue append an item at the end of the queue
+func (q *Queue) Enqueue(v interface{}) {
 	var items []interface{}
 	select {
 	case items = <-q.items:
@@ -42,8 +42,8 @@ func (q *Queue) Push(v interface{}) {
 	q.items <- items
 }
 
-// Pop remove an itme at the begining of the queue
-func (q *Queue) Pop() interface{} {
+// Dequeue remove an itme at the begining of the queue
+func (q *Queue) Dequeue() interface{} {
 	items := <-q.items
 	item := items[0]
 	items = items[1:]
@@ -103,6 +103,6 @@ func (it Iterator) Next() interface{} {
 	if it.q.Empty() {
 		return nil
 	}
-	v := it.q.Pop()
+	v := it.q.Dequeue()
 	return v
 }
