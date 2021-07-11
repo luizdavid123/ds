@@ -70,3 +70,39 @@ func (q *Queue) Front() interface{} {
 	q.items <- items
 	return item
 }
+
+// Clone return a deep copy of the queue
+func (q *Queue) Clone() *Queue {
+	copy := New()
+	empty := <-q.empty
+	copy.empty <- empty
+	q.empty <- empty
+	items := <-q.items
+	copy.items <- items
+	q.items <- items
+	return copy
+}
+
+// Iterator return an iterator of the queue
+func (q *Queue) Iterator() *Iterator {
+	return &Iterator{q: q.Clone()}
+}
+
+// Iterator enable traveling elements in the queue
+type Iterator struct {
+	q *Queue
+}
+
+// HasNext check if there is another element
+func (it Iterator) HasNext() bool {
+	return !it.q.Empty()
+}
+
+// Next return the next element
+func (it Iterator) Next() interface{} {
+	if it.q.Empty() {
+		return nil
+	}
+	v := it.q.Pop()
+	return v
+}

@@ -261,7 +261,7 @@ func (h Heap) Snapshot() *Heap {
 	return &snap
 }
 
-// Iterator enabe
+// Iterator enabe traveling elements in the heap
 type Iterator struct {
 	h *Heap
 }
