@@ -9,7 +9,7 @@ import (
 type Queue struct {
 	items []interface{}
 	size  int
-	sync.Mutex
+	mutex sync.Mutex
 }
 
 // New return a queue
@@ -22,30 +22,33 @@ func New() *Queue {
 
 // Empty check if the queue is empty
 func (q *Queue) Empty() bool {
-	q.Lock()
-	defer q.Unlock()
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
 	return q.size == 0
 }
 
 // Size return the number of items in the queue
 func (q *Queue) Size() int {
-	q.Lock()
-	defer q.Unlock()
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
 	return q.size
 }
 
 // Enqueue append an item at the end of the queue
 func (q *Queue) Enqueue(v interface{}) {
-	q.Lock()
-	defer q.Unlock()
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
 	q.items = append(q.items, v)
 	q.size++
 }
 
 // Dequeue remove an itme at the begining of the queue
 func (q *Queue) Dequeue() interface{} {
-	q.Lock()
-	defer q.Unlock()
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
+	if q.size == 0 {
+		return nil
+	}
 	item := q.items[0]
 	q.items = q.items[1:]
 	q.size--
@@ -54,22 +57,28 @@ func (q *Queue) Dequeue() interface{} {
 
 // Rare return an item at the end of the queue
 func (q *Queue) Rare() interface{} {
-	q.Lock()
-	defer q.Unlock()
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
+	if q.size == 0 {
+		return nil
+	}
 	return q.items[q.size-1]
 }
 
 // Rare return an item at the begining of the queue
 func (q *Queue) Front() interface{} {
-	q.Lock()
-	defer q.Unlock()
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
+	if q.size == 0 {
+		return nil
+	}
 	return q.items[0]
 }
 
 // Clone return a deep copy of the queue
 func (q *Queue) Clone() *Queue {
-	q.Lock()
-	defer q.Unlock()
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
 	copy := New()
 	copy.size = q.size
 	copy.items = append(copy.items, q.items...)
@@ -78,8 +87,8 @@ func (q *Queue) Clone() *Queue {
 
 // String return string representation of the queue
 func (q *Queue) String() string {
-	q.Lock()
-	defer q.Unlock()
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
 	str := fmt.Sprintf("%d %v", q.size, q.items)
 	return str
 }
