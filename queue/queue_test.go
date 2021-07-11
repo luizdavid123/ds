@@ -3,7 +3,6 @@ package queue_test
 import (
 	"ds/misc"
 	"ds/queue"
-	"fmt"
 	"sync"
 	"testing"
 )
@@ -53,20 +52,19 @@ func TestIterator(t *testing.T) {
 
 func TestCocurrent(t *testing.T) {
 	q := queue.New()
-	n := 9
 	var wg sync.WaitGroup
-	wg.Add(n)
-	for i := 1; i <= 9; i++ {
-		go func(i int) {
+	wg.Add(2)
+	go func() {
+		for i := 0; i < 10000; i++ {
 			q.Enqueue(i)
-			wg.Done()
-		}(i)
-	}
+		}
+		wg.Done()
+	}()
+	go func() {
+		for i := 0; i < 10000; i++ {
+			misc.Equals(t, i, q.Dequeue())
+		}
+		wg.Done()
+	}()
 	wg.Wait()
-	misc.Equals(t, 9, q.Size())
-	fmt.Println(q)
-	for i := 1; i <= 9; i++ {
-		misc.Equals(t, i, q.Dequeue())
-		misc.Equals(t, 9-i, q.Size())
-	}
 }
