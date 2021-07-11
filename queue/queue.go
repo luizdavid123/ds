@@ -1,86 +1,87 @@
 package queue
 
+import (
+	"fmt"
+	"sync"
+)
+
 // Queue serve data as first-in-first-out manner
 type Queue struct {
-	// the empty channel conveys metadata about the items channel:
-	// empty indicates that no goroutine is sending to items
-	items chan []interface{}
-	// holds true if the queue is empty
-	empty chan bool
+	items []interface{}
+	size  int
+	sync.Mutex
 }
 
 // New return a queue
 func New() *Queue {
-	items := make(chan []interface{}, 1)
-	empty := make(chan bool, 1)
-	empty <- true
-	return &Queue{items, empty}
+	var q Queue
+	q.items = []interface{}{}
+	q.size = 0
+	return &q
 }
 
 // Empty check if the queue is empty
 func (q *Queue) Empty() bool {
-	empty := <-q.empty
-	return empty
+	q.Lock()
+	defer q.Unlock()
+	return q.size == 0
 }
 
 // Size return the number of items in the queue
 func (q *Queue) Size() int {
-	items := <-q.items
-	size := len(items)
-	q.items <- items
-	return size
+	q.Lock()
+	defer q.Unlock()
+	return q.size
 }
 
 // Enqueue append an item at the end of the queue
 func (q *Queue) Enqueue(v interface{}) {
-	var items []interface{}
-	select {
-	case items = <-q.items:
-	case <-q.empty:
-	}
-	items = append(items, v)
-	q.items <- items
+	q.Lock()
+	defer q.Unlock()
+	q.items = append(q.items, v)
+	q.size++
 }
 
 // Dequeue remove an itme at the begining of the queue
 func (q *Queue) Dequeue() interface{} {
-	items := <-q.items
-	item := items[0]
-	items = items[1:]
-	if len(items) == 0 {
-		q.empty <- true
-	} else {
-		q.items <- items
-	}
+	q.Lock()
+	defer q.Unlock()
+	item := q.items[0]
+	q.items = q.items[1:]
+	q.size--
 	return item
 }
 
 // Rare return an item at the end of the queue
 func (q *Queue) Rare() interface{} {
-	items := <-q.items
-	item := items[len(items)-1]
-	q.items <- items
-	return item
+	q.Lock()
+	defer q.Unlock()
+	return q.items[q.size-1]
 }
 
 // Rare return an item at the begining of the queue
 func (q *Queue) Front() interface{} {
-	items := <-q.items
-	item := items[0]
-	q.items <- items
-	return item
+	q.Lock()
+	defer q.Unlock()
+	return q.items[0]
 }
 
 // Clone return a deep copy of the queue
 func (q *Queue) Clone() *Queue {
+	q.Lock()
+	defer q.Unlock()
 	copy := New()
-	empty := <-q.empty
-	copy.empty <- empty
-	q.empty <- empty
-	items := <-q.items
-	copy.items <- items
-	q.items <- items
+	copy.size = q.size
+	copy.items = append(copy.items, q.items...)
 	return copy
+}
+
+// String return string representation of the queue
+func (q *Queue) String() string {
+	q.Lock()
+	defer q.Unlock()
+	str := fmt.Sprintf("%d %v", q.size, q.items)
+	return str
 }
 
 // Iterator return an iterator of the queue
