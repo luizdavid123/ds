@@ -9,7 +9,7 @@ import (
 type Queue struct {
 	items []interface{}
 	size  int
-	mutex sync.Mutex
+	mutex *sync.Mutex
 }
 
 // New return a queue
@@ -17,6 +17,7 @@ func New() *Queue {
 	var q Queue
 	q.items = []interface{}{}
 	q.size = 0
+	q.mutex = &sync.Mutex{}
 	return &q
 }
 

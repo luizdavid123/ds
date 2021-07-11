@@ -3,6 +3,7 @@ package heap
 import (
 	"fmt"
 	"strings"
+	"sync"
 )
 
 // CmpFunc is a func that compare two values and return
@@ -39,6 +40,7 @@ type Heap struct {
 	size     int
 	capacity int
 	elements []interface{}
+	mutex    *sync.Mutex
 }
 
 // New return a heap
@@ -47,11 +49,14 @@ func New() *Heap {
 		size:     0,
 		capacity: 16,
 		elements: make([]interface{}, 0, 16),
+		mutex:    &sync.Mutex{},
 	}
 }
 
 // Peek return the root element
 func (h *Heap) Peek() interface{} {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
 	if h.size == 0 {
 		return nil
 	}
@@ -60,6 +65,8 @@ func (h *Heap) Peek() interface{} {
 
 // Pop return and remove the root element
 func (h *Heap) Pop() interface{} {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
 	if h.size == 0 {
 		return nil
 	}
@@ -75,6 +82,8 @@ func (h *Heap) Pop() interface{} {
 
 // Push add a element into heap
 func (h *Heap) Push(v interface{}) {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
 	if h.size == h.capacity {
 		h.resize()
 	}
@@ -85,21 +94,29 @@ func (h *Heap) Push(v interface{}) {
 
 // Size return the number of elements in heap
 func (h Heap) Size() int {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
 	return h.size
 }
 
 // Empty check if a heap has no elements
 func (h Heap) Empty() bool {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
 	return h.size == 0
 }
 
 // Capacity return the capacity of a heap
 func (h Heap) Capacity() int {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
 	return h.capacity
 }
 
 // String return string representation of a heap
 func (h Heap) String() string {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
 	return fmt.Sprintf("%d %d %v", h.size, h.capacity, h.elements)
 }
 
@@ -252,6 +269,8 @@ func (h Heap) Iterator() *Iterator {
 
 // Snapshot return latest copy of a heap
 func (h Heap) Snapshot() *Heap {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
 	var snap Heap
 	snap.size = h.size
 	snap.capacity = h.capacity
