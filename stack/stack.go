@@ -44,6 +44,7 @@ func (s *Stack) Pop() interface{} {
 	}
 	top := s.items[s.size-1]
 	s.items = s.items[:s.size-1]
+	s.size--
 	return top
 }
 
