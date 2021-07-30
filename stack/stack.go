@@ -22,14 +22,14 @@ func New() *Stack {
 }
 
 // Empty check if the stack is empty
-func (s Stack) Empty() bool {
+func (s *Stack) Empty() bool {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	return s.size == 0
 }
 
 // Size return the number of items in the stack
-func (s Stack) Size() int {
+func (s *Stack) Size() int {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	return s.size
@@ -67,7 +67,7 @@ func (s *Stack) Push(v interface{}) {
 }
 
 // String return the string representation of the stack
-func (s Stack) String() string {
+func (s *Stack) String() string {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	return fmt.Sprintf("%d %v", s.size, s.items)

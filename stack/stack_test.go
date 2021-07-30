@@ -27,6 +27,7 @@ func TestBasic(t *testing.T) {
 	for i := 1; i <= 9; i++ {
 		s.Push(i)
 		misc.Equals(t, i, s.Size())
+		misc.Equals(t, i, s.Top())
 	}
 	misc.Equals(t, false, s.Empty())
 	for i := 1; i <= 9; i++ {
@@ -50,6 +51,7 @@ func TestIterator(t *testing.T) {
 	}
 }
 
+// TODO: Neet to figure out how to test the stack in cocurrnet
 func TestCocurrent(t *testing.T) {
 	s := stack.New()
 	var wg sync.WaitGroup
@@ -62,7 +64,7 @@ func TestCocurrent(t *testing.T) {
 	}()
 	go func() {
 		for i := 0; i < 10000; i++ {
-			misc.Equals(t, i, s.Top())
+			misc.Equals(t, 10000-i-1, s.Pop())
 		}
 		wg.Done()
 	}()
